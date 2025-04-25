@@ -235,13 +235,6 @@ public class BlockManager implements Closeable {
         });
   }
 
-  /*private void updateMetricsCallback(MetricKey metricKey, long value) {
-    if (metricKey.equals(MetricKey.MEMORY_USAGE)) {
-      blobMetrics.add(metricKey, value);
-    }
-    aggregatingMetrics.add(metricKey, value);
-  }*/
-
   private long getLastObjectByte() {
     return this.metadata.getContentLength() - 1;
   }
