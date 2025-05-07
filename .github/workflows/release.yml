@@ -37,14 +37,28 @@ jobs:
     - name: Create Gradle configuration
       run: |
         aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase > passphrase.txt
+        
         # Kill any existing gpg-agent
         gpgconf --kill gpg-agent || true
-        aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .privateKey | gpg --batch --import --passphrase-file passphrase.txt
+       
+        # Create GPG directory
+        rm -rf $HOME/.gnupg
+        mkdir -p $HOME/.gnupg
+        chmod 700 $HOME/.gnupg
+        
+
+        # Import private key
+        aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .privateKey | gpg --batch --import --passphrase-file passphrase.txt
+
         # Get the imported key ID
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
         echo "Found Key ID: $KEY_ID"
-        # Export the found key
-        gpg --keyring secring.gpg --export-secret-keys > $HOME/.gnupg/secring.gpg
+
+        # Export the specific key with passphrase
+        gpg --batch --yes --pinentry-mode=loopback --passphrase-file passphrase.txt \
+        --export-secret-keys "$KEY_ID" > $HOME/.gnupg/secring.gpg
+
+        echo "Done till here"
         echo "signingEnabled=true" > gradle.properties
         echo "mavenUsername=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)" >> gradle.properties
         echo "mavenPassword=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .password)" >> gradle.properties
