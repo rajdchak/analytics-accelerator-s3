@@ -36,41 +36,44 @@ jobs:
 
     - name: Create Gradle configuration
       run: |
-        # Create a fresh, isolated GPG directory
-        GNUPGHOME=$(mktemp -d)
-        chmod 700 "$GNUPGHOME"
-        export GNUPGHOME
-        
-        # Create directory for the final key
-        mkdir -p "$GNUPGHOME/gradle"
-        chmod 700 "$GNUPGHOME/gradle"
+       # Create a fresh directory
+        WORKDIR=$(mktemp -d)
+        chmod 700 "$WORKDIR"
         
         # Get passphrase
-        aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase > passphrase.txt
+        aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase > "$WORKDIR/passphrase.txt"
         
-        # Import private key into isolated environment
-        aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .privateKey | gpg --homedir="$GNUPGHOME" --batch --import --passphrase-file passphrase.txt
+        # Get private key directly to a file
+        aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .privateKey > "$WORKDIR/private.key"
         
-        # Get the imported key ID
-        KEY_ID=$(gpg --homedir="$GNUPGHOME" --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
-        echo "Found Key ID: $KEY_ID"
+        # Create a temporary GPG home that won't be used by agent
+        export GNUPGHOME="$WORKDIR/gpg"
+        mkdir -p "$GNUPGHOME"
+        chmod 700 "$GNUPGHOME"
         
-        # Export the specific key with passphrase to our gradle directory
-        gpg --homedir="$GNUPGHOME" --batch --yes --pinentry-mode=loopback \
-            --passphrase-file passphrase.txt \
-            --export-secret-keys "$KEY_ID" > "$GNUPGHOME/gradle/secring.gpg"
+        # Import key without agent
+        gpg --batch --no-tty --no-use-agent \
+            --passphrase-file "$WORKDIR/passphrase.txt" \
+            --import "$WORKDIR/private.key"
+        
+        # Export directly to file without agent
+        gpg --batch --no-tty --no-use-agent \
+            --passphrase-file "$WORKDIR/passphrase.txt" \
+            --export-secret-keys 25557E2C > "$WORKDIR/secring.gpg"
         
         # Create gradle.properties
-        echo "signingEnabled=true" > gradle.properties
-        echo "mavenUsername=$(aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)" >> gradle.properties
-        echo "mavenPassword=$(aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .password)" >> gradle.properties
-        echo "# Signing key: https://keys.openpgp.org/vks/v1/by-fingerprint/FAC40B939F532005395118AF259316AA25557E2C" >> gradle.properties
-        echo "signing.keyId=25557E2C" >> gradle.properties
-        echo "signing.password=$(cat passphrase.txt)" >> gradle.properties
-        echo "signing.secretKeyRingFile=$GNUPGHOME/gradle/secring.gpg" >> gradle.properties
+        {
+            echo "signingEnabled=true"
+            echo "mavenUsername=$(aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)"
+            echo "mavenPassword=$(aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .password)"
+            echo "# Signing key: https://keys.openpgp.org/vks/v1/by-fingerprint/FAC40B939F532005395118AF259316AA25557E2C"
+            echo "signing.keyId=25557E2C"
+            echo "signing.password=$(cat "$WORKDIR/passphrase.txt")"
+            echo "signing.secretKeyRingFile=$WORKDIR/secring.gpg"
+        } > gradle.properties
         
-        # Cleanup passphrase file but keep the GNUPGHOME directory for Gradle to use
-        rm passphrase.txt
+        # Don't remove WORKDIR as Gradle needs it
+        chmod 600 "$WORKDIR/secring.gpg"
 
     - name: Build with Gradle
       run: ./gradlew build
