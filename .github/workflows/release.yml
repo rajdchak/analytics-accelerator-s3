@@ -61,7 +61,7 @@ jobs:
         
         echo "Exporting passphrase"
         # Export the specific key with passphrase
-        gpg --batch --yes --pinentry-mode=loopback --passphrase-file passphrase.txt \
+        gpg --batch --yes --pinentry-mode=loopback \
         --export-secret-keys "$KEY_ID" > $HOME/.gnupg/secring.gpg
         
         echo "Done till here"
