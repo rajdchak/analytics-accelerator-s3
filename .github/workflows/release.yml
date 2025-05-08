@@ -56,6 +56,17 @@ jobs:
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
         echo "Found Key ID: $KEY_ID"
 
+        # Create a script file for the password change
+        cat >change_passwd.script <<EOF
+        passwd
+        $(cat passphrase.txt)
+        $(cat passphrase.txt)
+        save
+        EOF
+        
+        # Change the passphrase
+        gpg --batch --command-file change_passwd.script --edit-key $KEY_ID
+
 
         echo "Exporting passphrase"
         # Export the specific key with passphrase
