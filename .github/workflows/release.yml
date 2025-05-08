@@ -37,6 +37,8 @@ jobs:
     - name: Create Gradle configuration
       run: |
         aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase > passphrase.txt
+        echo "Passphrase"
+        cat passphrase.txt
         
         # Kill any existing gpg-agent
         gpgconf --kill gpg-agent || true
@@ -54,6 +56,10 @@ jobs:
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
         echo "Found Key ID: $KEY_ID"
 
+        echo "Setting passphrase"
+        gpg --batch --yes --passphrase-file passphrase.txt --homedir $HOME/.gnupg
+
+        echo "Exporting passphrase"
         # Export the specific key with passphrase
         gpg --batch --yes --pinentry-mode=loopback --passphrase-file passphrase.txt \
         --export-secret-keys "$KEY_ID" > $HOME/.gnupg/secring.gpg
