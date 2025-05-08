@@ -36,7 +36,7 @@ jobs:
 
     - name: Create Gradle configuration
       run: |
-        aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase > passphrase.txt
+        aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id gpg-passphrase --query SecretString --output text | jq -r .passphrase > passphrase.txt
         echo "Passphrase"
         cat passphrase.txt
         
@@ -50,7 +50,7 @@ jobs:
         
 
         # Import private key
-        aws secretsmanager get-secret-value --region us-east-1 --secret-id gpg-passphrase --query SecretString --output text | jq -r .privateKey | gpg --batch --import --passphrase-file passphrase.txt
+        aws secretsmanager get-secret-value --region us-east-1 --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .privateKey | gpg --batch --import --passphrase-file passphrase.txt
 
         # Get the imported key ID
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
