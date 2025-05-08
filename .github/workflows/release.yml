@@ -39,24 +39,23 @@ jobs:
         mkdir -p $HOME/.gnupg
         chmod 700 $HOME/.gnupg
         
-        echo "Step 1: Importing key"
+        echo "Step 2: Importing key"
         aws secretsmanager get-secret-value \
           --region ${{ vars.AWS_REGION }} \
           --secret-id ${{ secrets.GPG_KEY_ID }} \
           --query SecretString \
           --output text | jq -r .privateKey | gpg --import --batch
         
-        echo "Step 2: Getting key details"
+        echo "Step 3: Getting key details"
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
-        echo "Using Key ID: $KEY_ID"
         
-        echo "Step 3: Exporting key"
+        echo "Step 4: Exporting key"
         gpg --batch --keyring $HOME/.gnupg/secring.gpg --no-default-keyring \
           --export-secret-keys > $HOME/.gnupg/secring.gpg
 
-        echo "Step 4: Create gradle properties file"
+        echo "Step 5: Create gradle properties file"
          {
-          echo "signingEnabled=true"
+          echo "signing.enabled=true"
           echo "signing.keyId=$KEY_ID"
           echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg"
           echo "mavenUsername=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)"
