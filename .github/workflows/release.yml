@@ -56,7 +56,7 @@ jobs:
 
         echo "Step 4: Create gradle properties file"
          {
-          echo "signing.enabled=true"
+          echo "signingEnabled=true"
           echo "signing.keyId=$KEY_ID"
           echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg"
           echo "mavenUsername=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)"
