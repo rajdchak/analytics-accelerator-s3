@@ -56,8 +56,6 @@ jobs:
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
         echo "Found Key ID: $KEY_ID"
 
-        echo "Setting passphrase"
-        gpg --batch --yes --passphrase-file passphrase.txt --homedir $HOME/.gnupg
 
         echo "Exporting passphrase"
         # Export the specific key with passphrase
