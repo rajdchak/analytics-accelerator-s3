@@ -55,6 +55,7 @@ jobs:
 
         echo "Step 5: Create gradle properties file"
          {
+          echo "signingEnabled=true"
           echo "signing.enabled=true"
           echo "signing.keyId=$KEY_ID"
           echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg"
