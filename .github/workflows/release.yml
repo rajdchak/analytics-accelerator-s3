@@ -50,8 +50,9 @@ jobs:
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
         
         echo "Step 4: Exporting key"
-        gpg --batch --keyring $HOME/.gnupg/secring.gpg --no-default-keyring \
-          --export-secret-keys > $HOME/.gnupg/secring.gpg
+        gpg --export-secret-keys --batch > $HOME/.gnupg/secring.gpg
+        echo "Verify export"
+        ls -la $HOME/.gnupg/secring.gpg
 
         echo "Step 5: Create gradle properties file"
          {
