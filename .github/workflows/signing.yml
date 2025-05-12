@@ -1,0 +1,119 @@
+name: Gradle Package
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'corretto'
+        server-id: github
+        settings-path: ${{ github.workspace }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.ASSUME_ROLE_ARN }}
+        aws-region: ${{ vars.AWS_REGION }}
+        role-session-name: github-actions-session
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.
+
+    - name: Create Gradle configuration
+      run: |
+        echo "Step 1: Setting up GPG directory"
+        mkdir -p $HOME/.gnupg
+        chmod 700 $HOME/.gnupg
+        
+        # Kill any existing gpg-agent
+        pkill gpg-agent || true
+        
+        # Configure GPG to not use agent
+        echo 'use-agent' > $HOME/.gnupg/gpg.conf
+        echo 'pinentry-mode loopback' >> $HOME/.gnupg/gpg.conf
+        echo 'no-tty' >> $HOME/.gnupg/gpg.conf
+        
+        echo "Step 2: Importing key"
+        aws secretsmanager get-secret-value \
+          --region ${{ vars.AWS_REGION }} \
+          --secret-id ${{ secrets.GPG_KEY_ID }} \
+          --query SecretString \
+          --output text | jq -r .privateKey | gpg --import --batch --no-tty
+        
+        echo "Step 3: Getting key details"
+        KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
+        echo "Found Key ID: $KEY_ID"
+        
+        echo "Step 4: Exporting key"
+        # Export the secret key
+        gpg --batch --yes --no-tty --export-secret-keys --output $HOME/.gnupg/secring.gpg
+        
+        # Verify the export
+        ls -la $HOME/.gnupg/secring.gpg
+        
+        echo "Step 5: Create gradle properties file"
+         {
+          echo "signingEnabled=true"
+          echo "signing.keyId=$KEY_ID"
+          echo "signing.password=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .password)"
+          echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg"
+          echo "mavenUsername=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)"
+          echo "mavenPassword=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .password)"
+        } > gradle.properties
+        
+        # Debug information (excluding sensitive data)
+        echo "GPG Configuration:"
+        cat $HOME/.gnupg/gpg.conf
+        
+        echo "Available GPG keys:"
+        gpg --list-secret-keys --keyid-format SHORT
+        
+        echo "Secring.gpg file:"
+        ls -la $HOME/.gnupg/secring.gpg
+
+    - name: Verify GPG Setup
+      run: |
+        echo "Testing GPG setup..."
+        echo "test" | gpg --clearsign
+        
+    - name: Build with Gradle
+      run: ./gradlew clean build
+
+    - name: Sign Artifacts
+      run: |
+        echo "Signing artifacts..."
+        ./gradlew signMavenJavaPublication --info --stacktrace
+        
+        echo "Verifying signatures..."
+        find build/libs -type f -name "*.asc" -exec echo "Found signature: {}" \;
+        find build/publications -type f -name "*.asc" -exec echo "Found signature: {}" \;
+
+    - name: Publish to Maven Central
+      run: |
+        echo "Publishing..."
+        ./gradlew publish --info --stacktrace
+        
+        echo "Verifying published artifacts..."
+        find ~/.m2/repository -type f -name "*.asc" -exec echo "Published signature: {}" \;
+
+    - name: Cleanup
+      if: always()
+      run: |
+        echo "Cleaning up sensitive files..."
+        rm -rf $HOME/.gnupg
+        rm -f gradle.properties
