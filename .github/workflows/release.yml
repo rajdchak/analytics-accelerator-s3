@@ -1,4 +1,4 @@
-name: Gradle Package
+name: Gradle Package Build and Publish to Maven
 
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
         role-session-name: github-actions-session
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.
+      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 
     - name: Create Gradle configuration
       run: |
@@ -49,16 +49,15 @@ jobs:
         echo "Step 3: Getting key details"
         KEY_ID=$(gpg --list-secret-keys --keyid-format SHORT | grep sec | tail -n 1 | awk '{print $2}' | cut -d'/' -f2)
         
-        echo "Step 4: Exporting key in the correct format"
-        # Create a new secring.gpg in the project directory
-        gpg --export-secret-keys --output secring.gpg
+        echo "Step 4: Exporting key"
+        gpg --batch --keyring $HOME/.gnupg/secring.gpg --no-default-keyring \
+          --export-secret-keys > $HOME/.gnupg/secring.gpg
 
         echo "Step 5: Create gradle properties file"
          {
           echo "signingEnabled=true"
           echo "signing.keyId=$KEY_ID"
-          echo "signing.password="
-          echo "signing.secretKeyRingFile=secring.gpg"
+          echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg"
           echo "mavenUsername=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)"
           echo "mavenPassword=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .password)"
         } > gradle.properties
