@@ -36,11 +36,11 @@ jobs:
     - name: Create Gradle configuration
       run: |
         echo "passphrase"
-        aws secretsmanager get-secret-value --region ${{ secrets.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase > passphrase.txt
+        aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase > passphrase.txt
 
         
         echo "Step 2: Importing key"
-        aws secretsmanager get-secret-value --region ${{ secrets.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .privateKey | gpg --import --batch --passphrase-file passphrase.txt
+        aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .privateKey | gpg --import --batch --passphrase-file passphrase.txt
 
         
         echo "Step 3: Getting key details"
@@ -56,10 +56,10 @@ jobs:
 
         echo "Step 5: Create gradle properties file"
         echo "signingEnabled=true" > gradle.properties
-        echo "mavenUsername=$(aws secretsmanager get-secret-value --region ${{ secrets.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)" >> gradle.properties
-        echo "mavenPassword=$(aws secretsmanager get-secret-value --region ${{ secrets.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .password)" >> gradle.properties
+        echo "mavenUsername=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .username)" >> gradle.properties
+        echo "mavenPassword=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.MAVEN_TOKEN_ID }} --query SecretString --output text | jq -r .password)" >> gradle.properties
         echo "signing.keyId=$KEY_ID_SHORT" >> gradle.properties
-        echo "signing.password=$(aws secretsmanager get-secret-value --region ${{ secrets.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase)" >> gradle.properties
+        echo "signing.password=$(aws secretsmanager get-secret-value --region ${{ vars.AWS_REGION }} --secret-id ${{ secrets.GPG_KEY_ID }} --query SecretString --output text | jq -r .passphrase)" >> gradle.properties
         echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> gradle.properties
 
 
