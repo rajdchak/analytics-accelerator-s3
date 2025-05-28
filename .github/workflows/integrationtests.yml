@@ -24,7 +24,7 @@ env:
 jobs:
   build:
     name: Integration Tests
-    runs-on: codebuild-rajdchak-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: codebuild-rajdchak-eu-west-1-${{ github.run_id }}-${{ github.run_attempt }}
     environment: integration-tests
     permissions:
       contents: read
