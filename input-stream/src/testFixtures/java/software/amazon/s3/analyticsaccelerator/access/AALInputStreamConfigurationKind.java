@@ -39,6 +39,7 @@ public enum AALInputStreamConfigurationKind {
     Map<String, String> customConfiguration = new HashMap<>();
     customConfiguration.put(configurationPrefix + ".physicalio.blockreadtimeout", "10000");
     customConfiguration.put(configurationPrefix + ".physicalio.blockreadretrycount", "2");
+    customConfiguration.put(configurationPrefix + ".physicalio.memory.cleanup.frequency", "1");
     customConfiguration.put(
         configurationPrefix + ".physicalio.max.memory.limit", getMemoryCapacity());
     ConnectorConfiguration config =
@@ -51,6 +52,7 @@ public enum AALInputStreamConfigurationKind {
     Map<String, String> customConfiguration = new HashMap<>();
     customConfiguration.put(
         configurationPrefix + ".physicalio.max.memory.limit", getMemoryCapacity());
+    customConfiguration.put(configurationPrefix + ".physicalio.memory.cleanup.frequency", "1");
     ConnectorConfiguration config =
         new ConnectorConfiguration(customConfiguration, configurationPrefix);
     return S3SeekableInputStreamConfiguration.fromConfiguration(config);
@@ -61,6 +63,7 @@ public enum AALInputStreamConfigurationKind {
     Map<String, String> customConfiguration = new HashMap<>();
     customConfiguration.put(
         configurationPrefix + ".physicalio.max.memory.limit", getMemoryCapacity());
+    customConfiguration.put(configurationPrefix + ".physicalio.memory.cleanup.frequency", "1");
     ConnectorConfiguration config =
         new ConnectorConfiguration(customConfiguration, configurationPrefix);
     return S3SeekableInputStreamConfiguration.fromConfiguration(config);
