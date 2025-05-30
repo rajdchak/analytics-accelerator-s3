@@ -46,9 +46,17 @@ public enum AALInputStreamConfigurationKind {
   private static S3SeekableInputStreamConfiguration readCorrectnessConfiguration() {
     String configurationPrefix = "readCorrectness";
     Map<String, String> customConfiguration = new HashMap<>();
-    customConfiguration.put(configurationPrefix + ".physicalio.max.memory.limit", "524288000");
+    customConfiguration.put(
+        configurationPrefix + ".physicalio.max.memory.limit", getMemoryCapacity());
     ConnectorConfiguration config =
         new ConnectorConfiguration(customConfiguration, configurationPrefix);
     return S3SeekableInputStreamConfiguration.fromConfiguration(config);
+  }
+
+  private static String getMemoryCapacity() {
+    long maxHeapBytes = Runtime.getRuntime().maxMemory();
+    double percentage = 0.01;
+    long capacityBytes = (long) (maxHeapBytes * percentage);
+    return String.valueOf(capacityBytes);
   }
 }
