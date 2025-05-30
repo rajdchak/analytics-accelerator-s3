@@ -63,7 +63,6 @@ public enum AALInputStreamConfigurationKind {
     Map<String, String> customConfiguration = new HashMap<>();
     customConfiguration.put(
         configurationPrefix + ".physicalio.max.memory.limit", getMemoryCapacity());
-    customConfiguration.put(configurationPrefix + ".physicalio.memory.cleanup.frequency", "1");
     ConnectorConfiguration config =
         new ConnectorConfiguration(customConfiguration, configurationPrefix);
     return S3SeekableInputStreamConfiguration.fromConfiguration(config);
