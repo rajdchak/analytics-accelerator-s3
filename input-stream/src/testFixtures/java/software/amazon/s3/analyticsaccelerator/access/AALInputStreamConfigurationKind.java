@@ -27,7 +27,8 @@ import software.amazon.s3.analyticsaccelerator.common.ConnectorConfiguration;
 @Getter
 public enum AALInputStreamConfigurationKind {
   DEFAULT("DEFAULT", S3SeekableInputStreamConfiguration.DEFAULT),
-  GRAY_FAILURE("GRAY_FAILURE", grayFailureConfiguration());
+  GRAY_FAILURE("GRAY_FAILURE", grayFailureConfiguration()),
+  READ_CORRECTNESS("READ_CORRECTNESS", readCorrectnessConfiguration());
 
   private final String name;
   private final S3SeekableInputStreamConfiguration value;
@@ -37,6 +38,15 @@ public enum AALInputStreamConfigurationKind {
     Map<String, String> customConfiguration = new HashMap<>();
     customConfiguration.put(configurationPrefix + ".physicalio.blockreadtimeout", "10000");
     customConfiguration.put(configurationPrefix + ".physicalio.blockreadretrycount", "2");
+    ConnectorConfiguration config =
+        new ConnectorConfiguration(customConfiguration, configurationPrefix);
+    return S3SeekableInputStreamConfiguration.fromConfiguration(config);
+  }
+
+  private static S3SeekableInputStreamConfiguration readCorrectnessConfiguration() {
+    String configurationPrefix = "readCorrectness";
+    Map<String, String> customConfiguration = new HashMap<>();
+    customConfiguration.put(configurationPrefix + ".physicalio.max.memory.limit", "524288000");
     ConnectorConfiguration config =
         new ConnectorConfiguration(customConfiguration, configurationPrefix);
     return S3SeekableInputStreamConfiguration.fromConfiguration(config);
