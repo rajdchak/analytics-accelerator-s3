@@ -92,7 +92,8 @@ public class BlockManagerTest {
                 mock(Telemetry.class),
                 mock(PhysicalIOConfiguration.class),
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         NullPointerException.class,
         () ->
@@ -103,7 +104,8 @@ public class BlockManagerTest {
                 mock(Telemetry.class),
                 mock(PhysicalIOConfiguration.class),
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         NullPointerException.class,
         () ->
@@ -114,7 +116,8 @@ public class BlockManagerTest {
                 mock(Telemetry.class),
                 mock(PhysicalIOConfiguration.class),
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         NullPointerException.class,
         () ->
@@ -125,7 +128,8 @@ public class BlockManagerTest {
                 null,
                 mock(PhysicalIOConfiguration.class),
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         NullPointerException.class,
         () ->
@@ -136,7 +140,8 @@ public class BlockManagerTest {
                 mock(Telemetry.class),
                 null,
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
   }
 
   @Test
@@ -376,7 +381,8 @@ public class BlockManagerTest {
         TestTelemetry.DEFAULT,
         configuration,
         mock(Metrics.class),
-        mock(BlobStoreIndexCache.class));
+        mock(BlobStoreIndexCache.class),
+        OpenStreamInformation.DEFAULT);
   }
 
   @Test

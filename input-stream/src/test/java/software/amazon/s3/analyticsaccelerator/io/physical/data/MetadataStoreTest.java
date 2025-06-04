@@ -33,6 +33,7 @@ import software.amazon.s3.analyticsaccelerator.io.physical.PhysicalIOConfigurati
 import software.amazon.s3.analyticsaccelerator.request.HeadRequest;
 import software.amazon.s3.analyticsaccelerator.request.ObjectClient;
 import software.amazon.s3.analyticsaccelerator.request.ObjectMetadata;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 public class MetadataStoreTest {
@@ -42,19 +43,19 @@ public class MetadataStoreTest {
     // Given: a MetadataStore with caching turned on
     ObjectClient objectClient = mock(ObjectClient.class);
     ObjectMetadata objectMetadata = ObjectMetadata.builder().etag("random").build();
-    when(objectClient.headObject(any()))
+    when(objectClient.headObject(any(), any()))
         .thenReturn(CompletableFuture.completedFuture(objectMetadata));
     MetadataStore metadataStore =
         new MetadataStore(objectClient, TestTelemetry.DEFAULT, PhysicalIOConfiguration.DEFAULT);
     S3URI key = S3URI.of("foo", "bar");
 
     // When: get(..) is called multiple times
-    metadataStore.get(key);
-    metadataStore.get(key);
-    metadataStore.get(key);
+    metadataStore.get(key, OpenStreamInformation.DEFAULT);
+    metadataStore.get(key, OpenStreamInformation.DEFAULT);
+    metadataStore.get(key, OpenStreamInformation.DEFAULT);
 
     // Then: object store was accessed only once
-    verify(objectClient, times(1)).headObject(any());
+    verify(objectClient, times(1)).headObject(any(), any());
   }
 
   @Test
@@ -68,24 +69,26 @@ public class MetadataStoreTest {
 
     HeadRequest h1 = HeadRequest.builder().s3Uri(S3URI.of("b", "key1")).build();
     HeadRequest h2 = HeadRequest.builder().s3Uri(S3URI.of("b", "key2")).build();
+    OpenStreamInformation openStreamInformation = OpenStreamInformation.DEFAULT;
 
     CompletableFuture<ObjectMetadata> future = mock(CompletableFuture.class);
     when(future.isDone()).thenReturn(false);
     when(future.cancel(anyBoolean())).thenThrow(new RuntimeException("something horrible"));
 
-    when(objectClient.headObject(h1)).thenReturn(future);
+    when(objectClient.headObject(h1, openStreamInformation)).thenReturn(future);
 
     CompletableFuture<ObjectMetadata> objectMetadataCompletableFuture =
         mock(CompletableFuture.class);
 
-    when(objectClient.headObject(h2)).thenReturn(objectMetadataCompletableFuture);
+    when(objectClient.headObject(h2, openStreamInformation))
+        .thenReturn(objectMetadataCompletableFuture);
 
     MetadataStore metadataStore =
         new MetadataStore(objectClient, TestTelemetry.DEFAULT, PhysicalIOConfiguration.DEFAULT);
 
     // When: MetadataStore is closed
-    metadataStore.get(S3URI.of("b", "key1"));
-    metadataStore.get(S3URI.of("b", "key2"));
+    metadataStore.get(S3URI.of("b", "key1"), openStreamInformation);
+    metadataStore.get(S3URI.of("b", "key2"), openStreamInformation);
     metadataStore.close();
 
     // Then: nothing has thrown, all futures were cancelled
@@ -96,7 +99,7 @@ public class MetadataStoreTest {
   void testEvictKey_ExistingKey() {
     // Setup
     ObjectClient objectClient = mock(ObjectClient.class);
-    when(objectClient.headObject(any()))
+    when(objectClient.headObject(any(), any()))
         .thenReturn(CompletableFuture.completedFuture(mock(ObjectMetadata.class)));
     MetadataStore metadataStore =
         new MetadataStore(objectClient, TestTelemetry.DEFAULT, PhysicalIOConfiguration.DEFAULT);

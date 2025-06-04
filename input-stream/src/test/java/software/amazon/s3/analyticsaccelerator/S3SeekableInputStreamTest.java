@@ -41,6 +41,7 @@ import software.amazon.s3.analyticsaccelerator.io.physical.data.MetadataStore;
 import software.amazon.s3.analyticsaccelerator.io.physical.impl.PhysicalIOImpl;
 import software.amazon.s3.analyticsaccelerator.request.ObjectMetadata;
 import software.amazon.s3.analyticsaccelerator.util.FakeObjectClient;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 @SuppressFBWarnings(
@@ -369,7 +370,12 @@ public class S3SeekableInputStreamTest extends S3SeekableInputStreamTestBase {
                 try {
                   PhysicalIO physicalIO =
                       new PhysicalIOImpl(
-                          s3URI, metadataStore, blobStore, TestTelemetry.DEFAULT, executorService);
+                          s3URI,
+                          metadataStore,
+                          blobStore,
+                          TestTelemetry.DEFAULT,
+                          OpenStreamInformation.DEFAULT,
+                          executorService);
                   LogicalIO logicalIO =
                       new ParquetLogicalIOImpl(
                           TEST_OBJECT,
@@ -465,7 +471,12 @@ public class S3SeekableInputStreamTest extends S3SeekableInputStreamTestBase {
         new ParquetLogicalIOImpl(
             s3URI,
             new PhysicalIOImpl(
-                s3URI, metadataStore, blobStore, TestTelemetry.DEFAULT, executorService),
+                s3URI,
+                metadataStore,
+                blobStore,
+                TestTelemetry.DEFAULT,
+                OpenStreamInformation.DEFAULT,
+                executorService),
             TestTelemetry.DEFAULT,
             LogicalIOConfiguration.DEFAULT,
             new ParquetColumnPrefetchStore(LogicalIOConfiguration.DEFAULT)),

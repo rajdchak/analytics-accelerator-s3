@@ -39,7 +39,7 @@ import software.amazon.s3.analyticsaccelerator.util.*;
 public class BlockStoreTest {
 
   private static final S3URI TEST_URI = S3URI.of("foo", "bar");
-  private static final String ETAG = "RandomString";
+  private static final String ETAG = "RANDOM";
   private static final ObjectKey objectKey = ObjectKey.builder().s3URI(TEST_URI).etag(ETAG).build();
   private static final int OBJECT_SIZE = 100;
   private static final long DEFAULT_READ_TIMEOUT = 120_000;
@@ -70,7 +70,8 @@ public class BlockStoreTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
 
     // Then: getBlock can retrieve the same block
     Optional<Block> b = blockStore.getBlock(4);
@@ -106,7 +107,8 @@ public class BlockStoreTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
     blockStore.add(
         blockKey2,
         new Block(
@@ -118,7 +120,8 @@ public class BlockStoreTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
     blockStore.add(
         blockKey3,
         new Block(
@@ -130,7 +133,8 @@ public class BlockStoreTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
 
     // When & Then: we query for the next missing byte, the result is correct
     assertEquals(OptionalLong.of(0), blockStore.findNextMissingByte(0));
@@ -169,7 +173,8 @@ public class BlockStoreTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
     blockStore.add(
         blockKey2,
         new Block(
@@ -181,7 +186,8 @@ public class BlockStoreTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
     blockStore.add(
         blockKey3,
         new Block(
@@ -193,7 +199,8 @@ public class BlockStoreTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
 
     // When & Then: we query for the next available byte, the result is correct
     assertEquals(OptionalLong.of(2), blockStore.findNextLoadedByte(0));

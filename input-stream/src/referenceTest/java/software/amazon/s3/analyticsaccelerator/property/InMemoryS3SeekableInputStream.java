@@ -81,20 +81,10 @@ public class InMemoryS3SeekableInputStream extends SeekableInputStream {
     }
 
     @Override
-    public CompletableFuture<ObjectMetadata> headObject(HeadRequest headRequest) {
-      return headObject(headRequest, null);
-    }
-
-    @Override
     public CompletableFuture<ObjectMetadata> headObject(
         HeadRequest headRequest, OpenStreamInformation openStreamInformation) {
       return CompletableFuture.completedFuture(
           ObjectMetadata.builder().contentLength(size).etag(etag).build());
-    }
-
-    @Override
-    public CompletableFuture<ObjectContent> getObject(GetRequest getRequest) {
-      return getObject(getRequest, null);
     }
 
     @Override

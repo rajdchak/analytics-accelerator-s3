@@ -55,11 +55,6 @@ public class FakeObjectClient implements ObjectClient {
   }
 
   @Override
-  public CompletableFuture<ObjectMetadata> headObject(HeadRequest headRequest) {
-    return headObject(headRequest, null);
-  }
-
-  @Override
   public CompletableFuture<ObjectMetadata> headObject(
       HeadRequest headRequest, OpenStreamInformation openStreamInformation) {
     headRequestCount.incrementAndGet();
@@ -68,19 +63,14 @@ public class FakeObjectClient implements ObjectClient {
   }
 
   @Override
-  public CompletableFuture<ObjectContent> getObject(GetRequest getRequest) {
+  public CompletableFuture<ObjectContent> getObject(
+      GetRequest getRequest, OpenStreamInformation openStreamInformation) {
     if (!getRequest.getEtag().equals(this.etag)) {
       throw S3Exception.builder()
           .message("At least one of the pre-conditions you specified did not hold")
           .statusCode(412)
           .build();
     }
-    return getObject(getRequest, null);
-  }
-
-  @Override
-  public CompletableFuture<ObjectContent> getObject(
-      GetRequest getRequest, OpenStreamInformation openStreamInformation) {
     getRequestCount.incrementAndGet();
     requestedRanges.add(getRequest.getRange());
     return CompletableFuture.completedFuture(

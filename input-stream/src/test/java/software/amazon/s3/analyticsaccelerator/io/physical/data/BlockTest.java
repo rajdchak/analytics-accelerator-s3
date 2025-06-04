@@ -39,7 +39,7 @@ import software.amazon.s3.analyticsaccelerator.util.*;
 @SuppressWarnings("unchecked")
 public class BlockTest {
   private static final S3URI TEST_URI = S3URI.of("foo", "bar");
-  private static final String ETAG = "RandomString";
+  private static final String ETAG = "RANDOM";
   private static final ObjectKey objectKey = ObjectKey.builder().s3URI(TEST_URI).etag(ETAG).build();
   private static final long DEFAULT_READ_TIMEOUT = 120_000;
   private static final int DEFAULT_READ_RETRY_COUNT = 20;
@@ -61,7 +61,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
     assertNotNull(block);
   }
 
@@ -88,7 +89,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mockMetrics,
-            mockIndexCache);
+            mockIndexCache,
+            OpenStreamInformation.DEFAULT);
 
     // Test when data is not in cache
     when(mockIndexCache.contains(blockKey)).thenReturn(false);
@@ -124,7 +126,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
 
     // When: bytes are requested from the block
     int r1 = block.read(0);
@@ -153,7 +156,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
 
     // When: bytes are requested from the block
     byte[] b1 = new byte[4];
@@ -248,7 +252,8 @@ public class BlockTest {
                 DEFAULT_READ_TIMEOUT,
                 DEFAULT_READ_RETRY_COUNT,
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         IllegalArgumentException.class,
         () ->
@@ -261,7 +266,8 @@ public class BlockTest {
                 DEFAULT_READ_TIMEOUT,
                 DEFAULT_READ_RETRY_COUNT,
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         IllegalArgumentException.class,
         () ->
@@ -274,7 +280,8 @@ public class BlockTest {
                 DEFAULT_READ_TIMEOUT,
                 DEFAULT_READ_RETRY_COUNT,
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         IllegalArgumentException.class,
         () ->
@@ -287,7 +294,8 @@ public class BlockTest {
                 DEFAULT_READ_TIMEOUT,
                 DEFAULT_READ_RETRY_COUNT,
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
     assertThrows(
         IllegalArgumentException.class,
         () ->
@@ -300,7 +308,8 @@ public class BlockTest {
                 DEFAULT_READ_TIMEOUT,
                 DEFAULT_READ_RETRY_COUNT,
                 mock(Metrics.class),
-                mock(BlobStoreIndexCache.class)));
+                mock(BlobStoreIndexCache.class),
+                OpenStreamInformation.DEFAULT));
   }
 
   @SneakyThrows
@@ -319,7 +328,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
     assertThrows(IllegalArgumentException.class, () -> block.read(-10));
     assertThrows(NullPointerException.class, () -> block.read(null, 0, 3, 1));
     assertThrows(IllegalArgumentException.class, () -> block.read(b, -5, 3, 1));
@@ -342,7 +352,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
     assertTrue(block.contains(0));
     assertFalse(block.contains(TEST_DATA.length() + 1));
   }
@@ -362,7 +373,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
     assertThrows(IllegalArgumentException.class, () -> block.contains(-1));
   }
 
@@ -383,7 +395,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
     assertThrows(IOException.class, () -> block.read(4));
   }
 
@@ -402,7 +415,8 @@ public class BlockTest {
             DEFAULT_READ_TIMEOUT,
             DEFAULT_READ_RETRY_COUNT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
     block.close();
     block.close();
   }

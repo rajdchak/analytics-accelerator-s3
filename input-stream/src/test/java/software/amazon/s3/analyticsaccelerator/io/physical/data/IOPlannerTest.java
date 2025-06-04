@@ -37,7 +37,7 @@ import software.amazon.s3.analyticsaccelerator.util.*;
 @SuppressWarnings("unchecked")
 public class IOPlannerTest {
   private static final S3URI TEST_URI = S3URI.of("foo", "bar");
-  private static final String ETAG = "RandomString";
+  private static final String ETAG = "RANDOM";
   private static final ObjectKey objectKey = ObjectKey.builder().s3URI(TEST_URI).etag(ETAG).build();
 
   @Test
@@ -106,7 +106,8 @@ public class IOPlannerTest {
             120_000,
             20,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class)));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT));
     IOPlanner ioPlanner = new IOPlanner(blockStore);
 
     // When: a read plan is requested for a range (0, 400)

@@ -110,11 +110,6 @@ public class S3SdkObjectClient implements ObjectClient {
   }
 
   @Override
-  public CompletableFuture<ObjectMetadata> headObject(HeadRequest headRequest) {
-    return headObject(headRequest, null);
-  }
-
-  @Override
   public CompletableFuture<ObjectMetadata> headObject(
       HeadRequest headRequest, OpenStreamInformation openStreamInformation) {
     HeadObjectRequest.Builder builder =
@@ -147,11 +142,6 @@ public class S3SdkObjectClient implements ObjectClient {
   }
 
   @Override
-  public CompletableFuture<ObjectContent> getObject(GetRequest getRequest) {
-    return getObject(getRequest, null);
-  }
-
-  @Override
   public CompletableFuture<ObjectContent> getObject(
       GetRequest getRequest, OpenStreamInformation openStreamInformation) {
 
@@ -165,7 +155,7 @@ public class S3SdkObjectClient implements ObjectClient {
     builder.range(range);
 
     final String referrerHeader;
-    if (openStreamInformation != null && openStreamInformation.getStreamContext() != null) {
+    if (openStreamInformation.getStreamContext() != null) {
       referrerHeader =
           openStreamInformation.getStreamContext().modifyAndBuildReferrerHeader(getRequest);
     } else {

@@ -67,25 +67,6 @@ public class PhysicalIOImpl implements PhysicalIO {
    * @param metadataStore a metadata cache
    * @param blobStore a data cache
    * @param telemetry The {@link Telemetry} to use to report measurements.
-   * @param threadPool Thread pool for async operations
-   */
-  public PhysicalIOImpl(
-      @NonNull S3URI s3URI,
-      @NonNull MetadataStore metadataStore,
-      @NonNull BlobStore blobStore,
-      @NonNull Telemetry telemetry,
-      @NonNull ExecutorService threadPool)
-      throws IOException {
-    this(s3URI, metadataStore, blobStore, telemetry, null, threadPool);
-  }
-
-  /**
-   * Construct a new instance of PhysicalIOV2.
-   *
-   * @param s3URI the S3 URI of the object
-   * @param metadataStore a metadata cache
-   * @param blobStore a data cache
-   * @param telemetry The {@link Telemetry} to use to report measurements.
    * @param openStreamInformation contains stream information
    * @param threadPool Thread pool for async operations
    */
@@ -94,14 +75,14 @@ public class PhysicalIOImpl implements PhysicalIO {
       @NonNull MetadataStore metadataStore,
       @NonNull BlobStore blobStore,
       @NonNull Telemetry telemetry,
-      OpenStreamInformation openStreamInformation,
+      @NonNull OpenStreamInformation openStreamInformation,
       @NonNull ExecutorService threadPool)
       throws IOException {
     this.metadataStore = metadataStore;
     this.blobStore = blobStore;
     this.telemetry = telemetry;
     this.openStreamInformation = openStreamInformation;
-    this.metadata = this.metadataStore.get(s3URI);
+    this.metadata = this.metadataStore.get(s3URI, openStreamInformation);
     this.objectKey = ObjectKey.builder().s3URI(s3URI).etag(metadata.getEtag()).build();
     this.threadPool = threadPool;
   }

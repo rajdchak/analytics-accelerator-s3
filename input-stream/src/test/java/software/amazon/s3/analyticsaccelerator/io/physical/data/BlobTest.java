@@ -35,6 +35,7 @@ import software.amazon.s3.analyticsaccelerator.request.Range;
 import software.amazon.s3.analyticsaccelerator.request.ReadMode;
 import software.amazon.s3.analyticsaccelerator.util.FakeObjectClient;
 import software.amazon.s3.analyticsaccelerator.util.ObjectKey;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 @SuppressFBWarnings(
@@ -42,7 +43,7 @@ import software.amazon.s3.analyticsaccelerator.util.S3URI;
     justification = "We mean to pass nulls to checks")
 public class BlobTest {
   private static final S3URI TEST_URI = S3URI.of("foo", "bar");
-  private static final String ETAG = "RandomString";
+  private static final String ETAG = "RANDOM";
   private static final ObjectKey objectKey = ObjectKey.builder().s3URI(TEST_URI).etag(ETAG).build();
   private static final String TEST_DATA = "test-data-0123456789";
   private static final int OBJECT_SIZE = 100;
@@ -177,7 +178,8 @@ public class BlobTest {
             TestTelemetry.DEFAULT,
             PhysicalIOConfiguration.DEFAULT,
             mock(Metrics.class),
-            mock(BlobStoreIndexCache.class));
+            mock(BlobStoreIndexCache.class),
+            OpenStreamInformation.DEFAULT);
 
     return new Blob(objectKey, mockMetadataStore, blockManager, TestTelemetry.DEFAULT);
   }

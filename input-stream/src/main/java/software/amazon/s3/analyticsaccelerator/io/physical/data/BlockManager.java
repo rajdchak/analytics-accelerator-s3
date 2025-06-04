@@ -61,36 +61,6 @@ public class BlockManager implements Closeable {
    * @param objectKey the etag and S3 URI of the object
    * @param objectClient object client capable of interacting with the underlying object store
    * @param telemetry an instance of {@link Telemetry} to use
-   * @param metadata the metadata for the object we are reading
-   * @param configuration the physicalIO configuration
-   * @param aggregatingMetrics factory metrics
-   * @param indexCache blobstore index cache
-   */
-  public BlockManager(
-      @NonNull ObjectKey objectKey,
-      @NonNull ObjectClient objectClient,
-      @NonNull ObjectMetadata metadata,
-      @NonNull Telemetry telemetry,
-      @NonNull PhysicalIOConfiguration configuration,
-      @NonNull Metrics aggregatingMetrics,
-      @NonNull BlobStoreIndexCache indexCache) {
-    this(
-        objectKey,
-        objectClient,
-        metadata,
-        telemetry,
-        configuration,
-        aggregatingMetrics,
-        indexCache,
-        null);
-  }
-
-  /**
-   * Constructs a new BlockManager.
-   *
-   * @param objectKey the etag and S3 URI of the object
-   * @param objectClient object client capable of interacting with the underlying object store
-   * @param telemetry an instance of {@link Telemetry} to use
    * @param metadata the metadata for the object
    * @param configuration the physicalIO configuration
    * @param aggregatingMetrics factory metrics
@@ -105,7 +75,7 @@ public class BlockManager implements Closeable {
       @NonNull PhysicalIOConfiguration configuration,
       @NonNull Metrics aggregatingMetrics,
       @NonNull BlobStoreIndexCache indexCache,
-      OpenStreamInformation openStreamInformation) {
+      @NonNull OpenStreamInformation openStreamInformation) {
     this.objectKey = objectKey;
     this.objectClient = objectClient;
     this.metadata = metadata;

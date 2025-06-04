@@ -31,6 +31,7 @@ import software.amazon.s3.analyticsaccelerator.io.physical.PhysicalIOConfigurati
 import software.amazon.s3.analyticsaccelerator.request.HeadRequest;
 import software.amazon.s3.analyticsaccelerator.request.ObjectClient;
 import software.amazon.s3.analyticsaccelerator.request.ObjectMetadata;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 import software.amazon.s3.analyticsaccelerator.util.StreamAttributes;
 
@@ -79,17 +80,19 @@ public class MetadataStore implements Closeable {
    * store).
    *
    * @param s3URI the object to fetch the metadata for
+   * @param openStreamInformation contains the open stream information
    * @return returns the {@link ObjectMetadata}.
    * @throws IOException if an I/O error occurs
    */
-  public ObjectMetadata get(S3URI s3URI) throws IOException {
+  public ObjectMetadata get(S3URI s3URI, OpenStreamInformation openStreamInformation)
+      throws IOException {
     return telemetry.measureJoinCritical(
         () ->
             Operation.builder()
                 .name(OPERATION_METADATA_HEAD_JOIN)
                 .attribute(StreamAttributes.uri(s3URI))
                 .build(),
-        this.asyncGet(s3URI),
+        this.asyncGet(s3URI, openStreamInformation),
         this.configuration.getBlockReadTimeout());
   }
 
@@ -108,9 +111,11 @@ public class MetadataStore implements Closeable {
    * store).
    *
    * @param s3URI the object to fetch the metadata for
+   * @param openStreamInformation contains the open stream information
    * @return returns the {@link CompletableFuture} that holds object's metadata.
    */
-  public synchronized CompletableFuture<ObjectMetadata> asyncGet(S3URI s3URI) {
+  public synchronized CompletableFuture<ObjectMetadata> asyncGet(
+      S3URI s3URI, OpenStreamInformation openStreamInformation) {
     return this.cache.computeIfAbsent(
         s3URI,
         uri ->
@@ -120,7 +125,8 @@ public class MetadataStore implements Closeable {
                         .name(OPERATION_METADATA_HEAD_ASYNC)
                         .attribute(StreamAttributes.uri(s3URI))
                         .build(),
-                objectClient.headObject(HeadRequest.builder().s3Uri(s3URI).build())));
+                objectClient.headObject(
+                    HeadRequest.builder().s3Uri(s3URI).build(), openStreamInformation)));
   }
 
   /**

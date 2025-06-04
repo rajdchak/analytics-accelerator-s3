@@ -30,6 +30,7 @@ import software.amazon.s3.analyticsaccelerator.io.physical.data.BlobStore;
 import software.amazon.s3.analyticsaccelerator.io.physical.data.MetadataStore;
 import software.amazon.s3.analyticsaccelerator.io.physical.impl.PhysicalIOImpl;
 import software.amazon.s3.analyticsaccelerator.util.FakeObjectClient;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 public class S3SeekableInputStreamTestBase {
@@ -57,7 +58,12 @@ public class S3SeekableInputStreamTestBase {
           new ParquetLogicalIOImpl(
               TEST_OBJECT,
               new PhysicalIOImpl(
-                  TEST_OBJECT, metadataStore, blobStore, TestTelemetry.DEFAULT, executorService),
+                  TEST_OBJECT,
+                  metadataStore,
+                  blobStore,
+                  TestTelemetry.DEFAULT,
+                  OpenStreamInformation.DEFAULT,
+                  executorService),
               TestTelemetry.DEFAULT,
               logicalIOConfiguration,
               new ParquetColumnPrefetchStore(logicalIOConfiguration));

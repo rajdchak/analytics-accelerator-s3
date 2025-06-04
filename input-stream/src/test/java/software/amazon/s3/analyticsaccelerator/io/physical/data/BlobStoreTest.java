@@ -51,7 +51,7 @@ import software.amazon.s3.analyticsaccelerator.util.S3URI;
     justification = "We mean to pass nulls to checks")
 public class BlobStoreTest {
   private static final String TEST_DATA = "test-data";
-  private static final String ETAG = "random";
+  private static final String ETAG = "RANDOM";
   private static final ObjectMetadata objectMetadata =
       ObjectMetadata.builder().contentLength(TEST_DATA.length()).etag(ETAG).build();
 
@@ -70,7 +70,7 @@ public class BlobStoreTest {
   void setUp() throws IOException {
     ObjectClient objectClient = new FakeObjectClient("test-data");
     MetadataStore metadataStore = mock(MetadataStore.class);
-    when(metadataStore.get(any()))
+    when(metadataStore.get(any(), any()))
         .thenReturn(ObjectMetadata.builder().contentLength(TEST_DATA.length()).etag(ETAG).build());
     Metrics metrics = new Metrics();
     Map<String, String> configMap = new HashMap<>();

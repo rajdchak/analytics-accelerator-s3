@@ -71,44 +71,6 @@ public class Block implements Closeable {
    * @param readRetryCount Number of retries for block read failure
    * @param aggregatingMetrics blobstore metrics
    * @param indexCache blobstore index cache
-   */
-  public Block(
-      @NonNull BlockKey blockKey,
-      @NonNull ObjectClient objectClient,
-      @NonNull Telemetry telemetry,
-      long generation,
-      @NonNull ReadMode readMode,
-      long readTimeout,
-      int readRetryCount,
-      @NonNull Metrics aggregatingMetrics,
-      @NonNull BlobStoreIndexCache indexCache)
-      throws IOException {
-
-    this(
-        blockKey,
-        objectClient,
-        telemetry,
-        generation,
-        readMode,
-        readTimeout,
-        readRetryCount,
-        aggregatingMetrics,
-        indexCache,
-        null);
-  }
-
-  /**
-   * Constructs a Block data.
-   *
-   * @param blockKey the objectkey and range of the object
-   * @param objectClient the object client to use to interact with the object store
-   * @param telemetry an instance of {@link Telemetry} to use
-   * @param generation generation of the block in a sequential read pattern (should be 0 by default)
-   * @param readMode read mode describing whether this is a sync or async fetch
-   * @param readTimeout Timeout duration (in milliseconds) for reading a block object from S3
-   * @param readRetryCount Number of retries for block read failure
-   * @param aggregatingMetrics blobstore metrics
-   * @param indexCache blobstore index cache
    * @param openStreamInformation contains stream information
    */
   public Block(
@@ -121,7 +83,7 @@ public class Block implements Closeable {
       int readRetryCount,
       @NonNull Metrics aggregatingMetrics,
       @NonNull BlobStoreIndexCache indexCache,
-      OpenStreamInformation openStreamInformation)
+      @NonNull OpenStreamInformation openStreamInformation)
       throws IOException {
 
     long start = blockKey.getRange().getStart();

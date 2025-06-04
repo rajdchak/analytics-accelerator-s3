@@ -120,10 +120,16 @@ public class S3SeekableInputStreamFactoryTest {
     assertNotNull(inputStream);
     assertEquals(
         CONTENT_LENGTH,
-        s3SeekableInputStreamFactory.getObjectMetadataStore().get(s3URI).getContentLength());
+        s3SeekableInputStreamFactory
+            .getObjectMetadataStore()
+            .get(s3URI, OpenStreamInformation.DEFAULT)
+            .getContentLength());
     assertEquals(
         objectMetadata.getEtag(),
-        s3SeekableInputStreamFactory.getObjectMetadataStore().get(s3URI).getEtag());
+        s3SeekableInputStreamFactory
+            .getObjectMetadataStore()
+            .get(s3URI, OpenStreamInformation.DEFAULT)
+            .getEtag());
   }
 
   @Test

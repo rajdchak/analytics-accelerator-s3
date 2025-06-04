@@ -34,6 +34,7 @@ import software.amazon.s3.analyticsaccelerator.io.physical.impl.PhysicalIOImpl;
 import software.amazon.s3.analyticsaccelerator.request.HeadRequest;
 import software.amazon.s3.analyticsaccelerator.request.ObjectClient;
 import software.amazon.s3.analyticsaccelerator.request.ObjectMetadata;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.PrefetchMode;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
@@ -132,7 +133,7 @@ public class ParquetLogicalIOImplTest {
   @Test
   void testMetadaWithZeroContentLength() throws IOException {
     ObjectClient mockClient = mock(ObjectClient.class);
-    when(mockClient.headObject(any(HeadRequest.class)))
+    when(mockClient.headObject(any(HeadRequest.class), any(OpenStreamInformation.class)))
         .thenReturn(
             CompletableFuture.completedFuture(
                 ObjectMetadata.builder().contentLength(0).etag("random").build()));
@@ -147,7 +148,12 @@ public class ParquetLogicalIOImplTest {
             mock(Metrics.class));
     PhysicalIOImpl physicalIO =
         new PhysicalIOImpl(
-            s3URI, metadataStore, blobStore, TestTelemetry.DEFAULT, mock(ExecutorService.class));
+            s3URI,
+            metadataStore,
+            blobStore,
+            TestTelemetry.DEFAULT,
+            OpenStreamInformation.DEFAULT,
+            mock(ExecutorService.class));
     assertDoesNotThrow(
         () ->
             new ParquetLogicalIOImpl(
