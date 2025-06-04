@@ -38,6 +38,7 @@ import software.amazon.s3.analyticsaccelerator.common.telemetry.Telemetry;
 import software.amazon.s3.analyticsaccelerator.io.physical.PhysicalIOConfiguration;
 import software.amazon.s3.analyticsaccelerator.request.*;
 import software.amazon.s3.analyticsaccelerator.util.ObjectKey;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 @SuppressFBWarnings(
@@ -61,7 +62,7 @@ public class BlockManagerTest {
     PhysicalIOConfiguration configuration = mock(PhysicalIOConfiguration.class);
     Metrics aggregatingMetrics = new Metrics();
     BlobStoreIndexCache indexCache = mock(BlobStoreIndexCache.class);
-    StreamContext streamContext = mock(StreamContext.class);
+    OpenStreamInformation openStreamInformation = mock(OpenStreamInformation.class);
 
     // Act
     BlockManager blockManager =
@@ -73,7 +74,7 @@ public class BlockManagerTest {
             configuration,
             aggregatingMetrics,
             indexCache,
-            streamContext);
+            openStreamInformation);
 
     // Assert
     assertNotNull(blockManager, "BlockManager should not be null");

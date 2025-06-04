@@ -55,6 +55,7 @@ import software.amazon.s3.analyticsaccelerator.request.ObjectMetadata;
 import software.amazon.s3.analyticsaccelerator.request.Range;
 import software.amazon.s3.analyticsaccelerator.request.ReadMode;
 import software.amazon.s3.analyticsaccelerator.request.Referrer;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 @SuppressFBWarnings(
@@ -220,7 +221,9 @@ public class S3SdkObjectClientTest {
 
     S3SdkObjectClient client = new S3SdkObjectClient(mockS3AsyncClient);
 
+    OpenStreamInformation openStreamInformation = mock(OpenStreamInformation.class);
     StreamContext mockStreamContext = mock(StreamContext.class);
+    when(openStreamInformation.getStreamContext()).thenReturn(mockStreamContext);
     when(mockStreamContext.modifyAndBuildReferrerHeader(any())).thenReturn("audit-referrer-value");
 
     GetRequest getRequest =
@@ -231,7 +234,7 @@ public class S3SdkObjectClientTest {
             .referrer(new Referrer("bytes=0-20", ReadMode.SYNC))
             .build();
 
-    client.getObject(getRequest, mockStreamContext);
+    client.getObject(getRequest, openStreamInformation);
 
     ArgumentCaptor<GetObjectRequest> requestCaptor =
         ArgumentCaptor.forClass(GetObjectRequest.class);

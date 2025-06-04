@@ -34,6 +34,7 @@ import software.amazon.s3.analyticsaccelerator.SeekableInputStream;
 import software.amazon.s3.analyticsaccelerator.common.ConnectorConfiguration;
 import software.amazon.s3.analyticsaccelerator.common.ObjectRange;
 import software.amazon.s3.analyticsaccelerator.request.*;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 public class InMemoryS3SeekableInputStream extends SeekableInputStream {
@@ -81,6 +82,12 @@ public class InMemoryS3SeekableInputStream extends SeekableInputStream {
 
     @Override
     public CompletableFuture<ObjectMetadata> headObject(HeadRequest headRequest) {
+      return headObject(headRequest, null);
+    }
+
+    @Override
+    public CompletableFuture<ObjectMetadata> headObject(
+        HeadRequest headRequest, OpenStreamInformation openStreamInformation) {
       return CompletableFuture.completedFuture(
           ObjectMetadata.builder().contentLength(size).etag(etag).build());
     }
@@ -92,7 +99,7 @@ public class InMemoryS3SeekableInputStream extends SeekableInputStream {
 
     @Override
     public CompletableFuture<ObjectContent> getObject(
-        GetRequest getRequest, StreamContext streamContext) {
+        GetRequest getRequest, OpenStreamInformation openStreamInformation) {
       int start = 0;
       int end = size - 1;
 

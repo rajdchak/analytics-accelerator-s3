@@ -33,6 +33,7 @@ import software.amazon.s3.analyticsaccelerator.common.telemetry.Operation;
 import software.amazon.s3.analyticsaccelerator.common.telemetry.Telemetry;
 import software.amazon.s3.analyticsaccelerator.exceptions.ExceptionHandler;
 import software.amazon.s3.analyticsaccelerator.request.*;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 /** Object client, based on AWS SDK v2 */
@@ -110,6 +111,12 @@ public class S3SdkObjectClient implements ObjectClient {
 
   @Override
   public CompletableFuture<ObjectMetadata> headObject(HeadRequest headRequest) {
+    return headObject(headRequest, null);
+  }
+
+  @Override
+  public CompletableFuture<ObjectMetadata> headObject(
+      HeadRequest headRequest, OpenStreamInformation openStreamInformation) {
     HeadObjectRequest.Builder builder =
         HeadObjectRequest.builder()
             .bucket(headRequest.getS3Uri().getBucket())
@@ -146,7 +153,7 @@ public class S3SdkObjectClient implements ObjectClient {
 
   @Override
   public CompletableFuture<ObjectContent> getObject(
-      GetRequest getRequest, StreamContext streamContext) {
+      GetRequest getRequest, OpenStreamInformation openStreamInformation) {
 
     GetObjectRequest.Builder builder =
         GetObjectRequest.builder()
@@ -158,8 +165,9 @@ public class S3SdkObjectClient implements ObjectClient {
     builder.range(range);
 
     final String referrerHeader;
-    if (streamContext != null) {
-      referrerHeader = streamContext.modifyAndBuildReferrerHeader(getRequest);
+    if (openStreamInformation != null && openStreamInformation.getStreamContext() != null) {
+      referrerHeader =
+          openStreamInformation.getStreamContext().modifyAndBuildReferrerHeader(getRequest);
     } else {
       referrerHeader = getRequest.getReferrer().toString();
     }

@@ -56,6 +56,12 @@ public class FakeObjectClient implements ObjectClient {
 
   @Override
   public CompletableFuture<ObjectMetadata> headObject(HeadRequest headRequest) {
+    return headObject(headRequest, null);
+  }
+
+  @Override
+  public CompletableFuture<ObjectMetadata> headObject(
+      HeadRequest headRequest, OpenStreamInformation openStreamInformation) {
     headRequestCount.incrementAndGet();
     return CompletableFuture.completedFuture(
         ObjectMetadata.builder().contentLength(this.content.length()).etag(this.etag).build());
@@ -74,7 +80,7 @@ public class FakeObjectClient implements ObjectClient {
 
   @Override
   public CompletableFuture<ObjectContent> getObject(
-      GetRequest getRequest, StreamContext streamContext) {
+      GetRequest getRequest, OpenStreamInformation openStreamInformation) {
     getRequestCount.incrementAndGet();
     requestedRanges.add(getRequest.getRange());
     return CompletableFuture.completedFuture(

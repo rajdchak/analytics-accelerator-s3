@@ -34,7 +34,6 @@ import software.amazon.s3.analyticsaccelerator.request.ObjectClient;
 import software.amazon.s3.analyticsaccelerator.request.ObjectMetadata;
 import software.amazon.s3.analyticsaccelerator.request.Range;
 import software.amazon.s3.analyticsaccelerator.request.ReadMode;
-import software.amazon.s3.analyticsaccelerator.request.StreamContext;
 import software.amazon.s3.analyticsaccelerator.util.*;
 
 /** Implements a Block Manager responsible for planning and scheduling reads on a key. */
@@ -49,7 +48,7 @@ public class BlockManager implements Closeable {
   private final IOPlanner ioPlanner;
   private final PhysicalIOConfiguration configuration;
   private final RangeOptimiser rangeOptimiser;
-  private StreamContext streamContext;
+  private OpenStreamInformation openStreamInformation;
   private final Metrics aggregatingMetrics;
   private final BlobStoreIndexCache indexCache;
   private static final String OPERATION_MAKE_RANGE_AVAILABLE = "block.manager.make.range.available";
@@ -96,7 +95,7 @@ public class BlockManager implements Closeable {
    * @param configuration the physicalIO configuration
    * @param aggregatingMetrics factory metrics
    * @param indexCache blobstore index cache
-   * @param streamContext contains audit headers to be attached in the request header
+   * @param openStreamInformation contains stream information
    */
   public BlockManager(
       @NonNull ObjectKey objectKey,
@@ -106,7 +105,7 @@ public class BlockManager implements Closeable {
       @NonNull PhysicalIOConfiguration configuration,
       @NonNull Metrics aggregatingMetrics,
       @NonNull BlobStoreIndexCache indexCache,
-      StreamContext streamContext) {
+      OpenStreamInformation openStreamInformation) {
     this.objectKey = objectKey;
     this.objectClient = objectClient;
     this.metadata = metadata;
@@ -119,7 +118,7 @@ public class BlockManager implements Closeable {
     this.sequentialReadProgression = new SequentialReadProgression(configuration);
     this.ioPlanner = new IOPlanner(blockStore);
     this.rangeOptimiser = new RangeOptimiser(configuration);
-    this.streamContext = streamContext;
+    this.openStreamInformation = openStreamInformation;
 
     prefetchSmallObject();
   }
@@ -254,7 +253,7 @@ public class BlockManager implements Closeable {
                     this.configuration.getBlockReadRetryCount(),
                     aggregatingMetrics,
                     indexCache,
-                    streamContext);
+                    openStreamInformation);
             blockStore.add(blockKey, block);
           }
         });

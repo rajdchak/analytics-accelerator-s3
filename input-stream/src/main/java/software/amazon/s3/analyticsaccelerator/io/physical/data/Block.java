@@ -33,7 +33,6 @@ import software.amazon.s3.analyticsaccelerator.request.ObjectClient;
 import software.amazon.s3.analyticsaccelerator.request.ObjectContent;
 import software.amazon.s3.analyticsaccelerator.request.ReadMode;
 import software.amazon.s3.analyticsaccelerator.request.Referrer;
-import software.amazon.s3.analyticsaccelerator.request.StreamContext;
 import software.amazon.s3.analyticsaccelerator.util.*;
 
 /**
@@ -46,7 +45,7 @@ public class Block implements Closeable {
   @Getter private final BlockKey blockKey;
   private final Telemetry telemetry;
   private final ObjectClient objectClient;
-  private final StreamContext streamContext;
+  private final OpenStreamInformation openStreamInformation;
   private final ReadMode readMode;
   private final Referrer referrer;
   private final long readTimeout;
@@ -110,7 +109,7 @@ public class Block implements Closeable {
    * @param readRetryCount Number of retries for block read failure
    * @param aggregatingMetrics blobstore metrics
    * @param indexCache blobstore index cache
-   * @param streamContext contains audit headers to be attached in the request header
+   * @param openStreamInformation contains stream information
    */
   public Block(
       @NonNull BlockKey blockKey,
@@ -122,7 +121,7 @@ public class Block implements Closeable {
       int readRetryCount,
       @NonNull Metrics aggregatingMetrics,
       @NonNull BlobStoreIndexCache indexCache,
-      StreamContext streamContext)
+      OpenStreamInformation openStreamInformation)
       throws IOException {
 
     long start = blockKey.getRange().getStart();
@@ -142,7 +141,7 @@ public class Block implements Closeable {
     this.telemetry = telemetry;
     this.blockKey = blockKey;
     this.objectClient = objectClient;
-    this.streamContext = streamContext;
+    this.openStreamInformation = openStreamInformation;
     this.readMode = readMode;
     this.referrer = new Referrer(this.blockKey.getRange().toHttpString(), readMode);
     this.readTimeout = readTimeout;
@@ -176,7 +175,7 @@ public class Block implements Closeable {
                         .attribute(StreamAttributes.range(this.blockKey.getRange()))
                         .attribute(StreamAttributes.generation(generation))
                         .build(),
-                objectClient.getObject(getRequest, streamContext));
+                objectClient.getObject(getRequest, openStreamInformation));
 
         // Handle IOExceptions when converting stream to byte array
         this.data =

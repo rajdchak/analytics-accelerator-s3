@@ -45,10 +45,10 @@ import software.amazon.s3.analyticsaccelerator.io.physical.PhysicalIOConfigurati
 import software.amazon.s3.analyticsaccelerator.io.physical.data.BlobStore;
 import software.amazon.s3.analyticsaccelerator.io.physical.data.MetadataStore;
 import software.amazon.s3.analyticsaccelerator.request.ObjectMetadata;
-import software.amazon.s3.analyticsaccelerator.request.StreamContext;
 import software.amazon.s3.analyticsaccelerator.util.FakeObjectClient;
 import software.amazon.s3.analyticsaccelerator.util.MetricKey;
 import software.amazon.s3.analyticsaccelerator.util.ObjectKey;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
 @SuppressFBWarnings(
@@ -82,7 +82,7 @@ public class PhysicalIOImplTest {
               null,
               mock(BlobStore.class),
               TestTelemetry.DEFAULT,
-              mock(StreamContext.class),
+              mock(OpenStreamInformation.class),
               executorService);
         });
 
@@ -94,7 +94,7 @@ public class PhysicalIOImplTest {
               mock(MetadataStore.class),
               null,
               TestTelemetry.DEFAULT,
-              mock(StreamContext.class),
+              mock(OpenStreamInformation.class),
               executorService);
         });
 
@@ -106,7 +106,7 @@ public class PhysicalIOImplTest {
               mock(MetadataStore.class),
               mock(BlobStore.class),
               null,
-              mock(StreamContext.class),
+              mock(OpenStreamInformation.class),
               executorService);
         });
 
