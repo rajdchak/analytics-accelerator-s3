@@ -65,6 +65,7 @@ public class OpenStreamInformationTest {
         base64Key,
         info.getEncryptionSecrets().getSsecCustomerKey().get(),
         "Customer key should match");
+    assertNotNull(info.getEncryptionSecrets().getSsecCustomerKeyMd5(), "MD5 should not be null");
   }
 
   @Test
@@ -144,6 +145,7 @@ public class OpenStreamInformationTest {
         base64Key,
         info.getEncryptionSecrets().getSsecCustomerKey().get(),
         "Customer key should match");
+    assertNotNull(info.getEncryptionSecrets().getSsecCustomerKeyMd5(), "MD5 should not be null");
   }
 
   @Test
@@ -157,5 +159,7 @@ public class OpenStreamInformationTest {
     assertFalse(
         info.getEncryptionSecrets().getSsecCustomerKey().isPresent(),
         "Customer key should be empty");
+    assertNull(
+        info.getEncryptionSecrets().getSsecCustomerKeyMd5(), "MD5 should be null for empty key");
   }
 }
