@@ -52,7 +52,9 @@ public enum S3Object {
   CSV_20MB(
       "sequential-20mb.csv", 20 * SizeConstants.ONE_MB_IN_BYTES, S3ObjectKind.RANDOM_SEQUENTIAL),
   TXT_16MB(
-      "sequential-16mb.txt", 16 * SizeConstants.ONE_MB_IN_BYTES, S3ObjectKind.RANDOM_SEQUENTIAL);
+      "sequential-16mb.txt", 16 * SizeConstants.ONE_MB_IN_BYTES, S3ObjectKind.RANDOM_SEQUENTIAL),
+  RANDOM_SSEC_ENCRYPTED_1MB(
+      "random-encrypted-1mb.bin", SizeConstants.ONE_MB_IN_BYTES, S3ObjectKind.RANDOM_SEQUENTIAL);
 
   private final String name;
   private final long size;
