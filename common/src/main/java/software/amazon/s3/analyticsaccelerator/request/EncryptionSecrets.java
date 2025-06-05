@@ -61,7 +61,7 @@ public class EncryptionSecrets {
                     return Base64.getEncoder()
                         .encodeToString(md.digest(Base64.getDecoder().decode(key)));
                   } catch (NoSuchAlgorithmException e) {
-                    throw new RuntimeException("MD5 algorithm not available", e);
+                    throw new IllegalStateException("MD5 algorithm not available", e);
                   }
                 })
             .orElse(null);
