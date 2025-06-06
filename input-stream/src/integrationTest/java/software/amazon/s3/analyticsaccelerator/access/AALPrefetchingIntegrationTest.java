@@ -39,7 +39,7 @@ public class AALPrefetchingIntegrationTest extends IntegrationTestBase {
   static Stream<Arguments> prefetchingTest() {
     return argumentsFor(
         getS3ClientKinds(),
-        smallBinaryObjects(),
+        smallBinaryObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
         parquetPatterns(),
         getS3SeekableInputStreamConfigurations());
   }
