@@ -16,6 +16,7 @@
 package software.amazon.s3.analyticsaccelerator.access;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static software.amazon.s3.analyticsaccelerator.access.ChecksumAssertions.assertChecksums;
 
 import java.io.IOException;
@@ -23,18 +24,30 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.checksums.Crc32CChecksum;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.s3.analyticsaccelerator.request.EncryptionSecrets;
 import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 
 public class SSECEncryptionTest extends IntegrationTestBase {
+  private static final Logger LOG = LoggerFactory.getLogger(SSECEncryptionTest.class);
+
+  private static final String CUSTOMER_KEY = System.getenv("CUSTOMER_KEY");
+
+  private void checkPrerequisites() {
+    String skipMessage = "Skipping tests: CUSTOMER_KEY environment variable is not set";
+    if (CUSTOMER_KEY == null || CUSTOMER_KEY.trim().isEmpty()) {
+      LOG.info(skipMessage); // or logger.warn(skipMessage);
+    }
+    assumeTrue(CUSTOMER_KEY != null && !CUSTOMER_KEY.trim().isEmpty(), skipMessage);
+  }
 
   @ParameterizedTest
   @MethodSource("encryptedSequentialReads")
@@ -44,12 +57,9 @@ public class SSECEncryptionTest extends IntegrationTestBase {
       StreamReadPatternKind streamReadPattern,
       AALInputStreamConfigurationKind configuration)
       throws IOException {
+    checkPrerequisites();
     testReadPatternUsingSSECEncryption(
-        s3ClientKind,
-        s3Object,
-        streamReadPattern,
-        configuration,
-        "AO8XKQXJgtIS9G+IrSWZ2eSNW1yJlvqElVoVcNlvDqE=");
+        s3ClientKind, s3Object, streamReadPattern, configuration, CUSTOMER_KEY);
   }
 
   @ParameterizedTest
@@ -60,12 +70,9 @@ public class SSECEncryptionTest extends IntegrationTestBase {
       StreamReadPatternKind streamReadPattern,
       AALInputStreamConfigurationKind configuration)
       throws IOException {
+    checkPrerequisites();
     testReadPatternUsingSSECEncryption(
-        s3ClientKind,
-        s3Object,
-        streamReadPattern,
-        configuration,
-        "AO8XKQXJgtIS9G+IrSWZ2eSNW1yJlvqElVoVcNlvDqE=");
+        s3ClientKind, s3Object, streamReadPattern, configuration, CUSTOMER_KEY);
   }
 
   @ParameterizedTest
@@ -76,23 +83,40 @@ public class SSECEncryptionTest extends IntegrationTestBase {
       StreamReadPatternKind streamReadPattern,
       AALInputStreamConfigurationKind configuration) {
 
-    CompletionException exception =
+    IOException exception =
         assertThrows(
-            CompletionException.class,
+            IOException.class,
             () -> {
-              testReadPatternUsingSSECEncryption(
-                  s3ClientKind,
-                  s3Object,
-                  streamReadPattern,
-                  configuration,
-                  "AO8XKQXJgtIS9G+IrSWZ2eSNW1yJlvqElVoVcNlvDqE");
+              testReadPatternUsingWrongKeyOrEmptyKey(
+                  s3ClientKind, s3Object, streamReadPattern, configuration, "wrongkey");
+            });
+
+    Throwable cause = exception.getCause();
+    assertTrue(cause instanceof S3Exception);
+    S3Exception s3Exception = (S3Exception) cause;
+    assertEquals(403, s3Exception.statusCode());
+  }
+
+  @ParameterizedTest
+  @MethodSource("encryptedReadsWithWrongKey")
+  void testEncryptedReadsWithEmptyKey(
+      S3ClientKind s3ClientKind,
+      S3Object s3Object,
+      StreamReadPatternKind streamReadPattern,
+      AALInputStreamConfigurationKind configuration) {
+
+    IOException exception =
+        assertThrows(
+            IOException.class,
+            () -> {
+              testReadPatternUsingWrongKeyOrEmptyKey(
+                  s3ClientKind, s3Object, streamReadPattern, configuration, null);
             });
 
     Throwable cause = exception.getCause();
     assertTrue(cause instanceof S3Exception);
     S3Exception s3Exception = (S3Exception) cause;
     assertEquals(400, s3Exception.statusCode());
-    assertTrue(s3Exception.getMessage().contains("calculated MD5 hash of the key did not match"));
   }
 
   protected void testReadPatternUsingSSECEncryption(
@@ -130,6 +154,34 @@ public class SSECEncryptionTest extends IntegrationTestBase {
 
     // Assert checksums
     assertChecksums(directChecksum, aalChecksum);
+  }
+
+  protected void testReadPatternUsingWrongKeyOrEmptyKey(
+      @NonNull S3ClientKind s3ClientKind,
+      @NonNull S3Object s3Object,
+      @NonNull StreamReadPatternKind streamReadPatternKind,
+      @NonNull AALInputStreamConfigurationKind AALInputStreamConfigurationKind,
+      String customerKey)
+      throws IOException {
+    StreamReadPattern streamReadPattern = streamReadPatternKind.getStreamReadPattern(s3Object);
+
+    OpenStreamInformation openStreamInformation =
+        customerKey == null
+            ? OpenStreamInformation.DEFAULT
+            : OpenStreamInformation.builder()
+                .encryptionSecrets(
+                    EncryptionSecrets.builder().sseCustomerKey(Optional.of(customerKey)).build())
+                .build();
+
+    // Read using the AAL S3
+    Crc32CChecksum aalChecksum = new Crc32CChecksum();
+    executeReadPatternOnAAL(
+        s3ClientKind,
+        s3Object,
+        streamReadPattern,
+        AALInputStreamConfigurationKind,
+        Optional.of(aalChecksum),
+        openStreamInformation);
   }
 
   static Stream<Arguments> encryptedSequentialReads() {

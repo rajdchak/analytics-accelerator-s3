@@ -20,6 +20,7 @@ env:
   S3_TEST_BUCKET : ${{ vars.S3_TEST_BUCKET }}
   S3_TEST_PREFIX : ${{ vars.S3_TEST_PREFIX }}
   ROLE_TO_ASSUME: ${{ secrets.S3_TEST_ASSUME_ROLE_ARN }}
+  CUSTOMER_KEY: ${{ secrets.CUSTOMER_KEY }}
 
 jobs:
   build:

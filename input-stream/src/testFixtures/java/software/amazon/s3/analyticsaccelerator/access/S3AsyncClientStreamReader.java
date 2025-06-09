@@ -74,17 +74,7 @@ public class S3AsyncClientStreamReader extends S3StreamReaderBase {
                       streamRead.getStart(), streamRead.getStart() + streamRead.getLength() - 1));
 
       // Add encryption parameters if present
-      if (openStreamInformation.getEncryptionSecrets() != null
-          && openStreamInformation.getEncryptionSecrets().getSsecCustomerKey().isPresent()) {
-        String customerKey =
-            openStreamInformation.getEncryptionSecrets().getSsecCustomerKey().get();
-        String customerKeyMd5 =
-            openStreamInformation.getEncryptionSecrets().getSsecCustomerKeyMd5();
-        requestBuilder
-            .sseCustomerAlgorithm(ServerSideEncryption.AES256.name())
-            .sseCustomerKey(customerKey)
-            .sseCustomerKeyMD5(customerKeyMd5);
-      }
+      addEncryptionSecrets(requestBuilder, openStreamInformation);
 
       // Issue a ranged GET and get InputStream
       InputStream inputStream =
@@ -93,6 +83,19 @@ public class S3AsyncClientStreamReader extends S3StreamReaderBase {
               .join();
       // drain  bytes
       drainStream(inputStream, s3Object, checksum, streamRead.getLength());
+    }
+  }
+
+  private void addEncryptionSecrets(
+      GetObjectRequest.Builder requestBuilder, OpenStreamInformation openStreamInformation) {
+    if (openStreamInformation.getEncryptionSecrets() != null
+        && openStreamInformation.getEncryptionSecrets().getSsecCustomerKey().isPresent()) {
+      String customerKey = openStreamInformation.getEncryptionSecrets().getSsecCustomerKey().get();
+      String customerKeyMd5 = openStreamInformation.getEncryptionSecrets().getSsecCustomerKeyMd5();
+      requestBuilder
+          .sseCustomerAlgorithm(ServerSideEncryption.AES256.name())
+          .sseCustomerKey(customerKey)
+          .sseCustomerKeyMD5(customerKeyMd5);
     }
   }
 
