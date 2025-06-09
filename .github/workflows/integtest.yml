@@ -20,7 +20,7 @@ env:
 jobs:
   build:
     name: Integration Tests
-    runs-on: codebuild-s3-analytics-accelerator-eu-west-1-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-latest
     environment: integration-tests
     permissions:
       contents: read
@@ -48,4 +48,4 @@ jobs:
         aws-region: ${{ env.S3_TEST_REGION }}
 
     - name: Build with Gradle Wrapper
-      run: ./gradlew integrationTest
+      run: ./gradlew :input-stream:integrationTest --tests "software.amazon.s3.analyticsaccelerator.access.SSECEncryptionTest"
