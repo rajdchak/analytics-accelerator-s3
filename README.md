@@ -71,6 +71,21 @@ When the `S3SeekableInputStreamFactory` is no longer required to create new stre
 s3SeekableInputStreamFactory.close();
 ```
 
+### Accessing SSE_C encrypted objects
+
+To access SSE_C encrypted objects using AAL pass the customer key in the ```OpenStreamInformation``` object and pass the openStreamInformation object in the stream. The customer key must be base64 encoded and the same key must be used for both encryption and decryption.
+
+```
+ OpenStreamInformation openStreamInformation =
+        OpenStreamInformation.builder()
+            .encryptionSecrets(
+                EncryptionSecrets.builder().sseCustomerKey(Optional.of(base64EncodedCustomerKey)).build())
+            .build();
+ 
+ S3SeekableInputStream s3SeekableInputStream = s3SeekableInputStreamFactory.createStream(S3URI.of(bucket, key), openStreamInformation);
+
+```
+
 ### Using with Hadoop
 
 If you are using Analytics Accelerator Library for Amazon S3 with Hadoop, you need to set the stream type to `analytics` in the Hadoop configuration. An example configuration is as follows:

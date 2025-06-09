@@ -108,7 +108,7 @@ public class ConcurrencyCorrectnessTest extends IntegrationTestBase {
   static Stream<Arguments> sequentialReads() {
     return argumentsFor(
         getS3ClientKinds(),
-        S3Object.smallAndMediumObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
+        S3Object.smallAndMediumObjects(),
         sequentialPatterns(),
         concurrencyCorrectnessConfigurationKind());
   }
@@ -116,7 +116,7 @@ public class ConcurrencyCorrectnessTest extends IntegrationTestBase {
   static Stream<Arguments> skippingReads() {
     return argumentsFor(
         getS3ClientKinds(),
-        S3Object.smallAndMediumObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
+        S3Object.smallAndMediumObjects(),
         skippingPatterns(),
         concurrencyCorrectnessConfigurationKind());
   }
@@ -124,7 +124,7 @@ public class ConcurrencyCorrectnessTest extends IntegrationTestBase {
   static Stream<Arguments> parquetReads() {
     return argumentsFor(
         getS3ClientKinds(),
-        S3Object.smallAndMediumObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
+        S3Object.smallAndMediumObjects(),
         parquetPatterns(),
         concurrencyCorrectnessConfigurationKind());
   }
@@ -132,7 +132,7 @@ public class ConcurrencyCorrectnessTest extends IntegrationTestBase {
   static Stream<Arguments> etagTests() {
     return argumentsFor(
         getS3ClientKinds(),
-        S3Object.smallBinaryObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
+        S3Object.smallBinaryObjects(),
         parquetPatterns(),
         concurrencyCorrectnessConfigurationKind());
   }

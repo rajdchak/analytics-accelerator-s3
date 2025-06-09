@@ -44,7 +44,7 @@ public class SSECEncryptionTest extends IntegrationTestBase {
   private void checkPrerequisites() {
     String skipMessage = "Skipping tests: CUSTOMER_KEY environment variable is not set";
     if (CUSTOMER_KEY == null || CUSTOMER_KEY.trim().isEmpty()) {
-      LOG.info(skipMessage); // or logger.warn(skipMessage);
+      LOG.info(skipMessage);
     }
     assumeTrue(CUSTOMER_KEY != null && !CUSTOMER_KEY.trim().isEmpty(), skipMessage);
   }
