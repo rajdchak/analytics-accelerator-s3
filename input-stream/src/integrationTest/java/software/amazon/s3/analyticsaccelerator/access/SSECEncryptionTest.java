@@ -37,8 +37,24 @@ import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 public class SSECEncryptionTest extends IntegrationTestBase {
 
   @ParameterizedTest
-  @MethodSource("encryptedReads")
-  void testEncryptedReads(
+  @MethodSource("encryptedSequentialReads")
+  void testEncryptedSequentialReads(
+      S3ClientKind s3ClientKind,
+      S3Object s3Object,
+      StreamReadPatternKind streamReadPattern,
+      AALInputStreamConfigurationKind configuration)
+      throws IOException {
+    testReadPatternUsingSSECEncryption(
+        s3ClientKind,
+        s3Object,
+        streamReadPattern,
+        configuration,
+        "AO8XKQXJgtIS9G+IrSWZ2eSNW1yJlvqElVoVcNlvDqE=");
+  }
+
+  @ParameterizedTest
+  @MethodSource("encryptedParquetReads")
+  void testEncryptedParquetReads(
       S3ClientKind s3ClientKind,
       S3Object s3Object,
       StreamReadPatternKind streamReadPattern,
@@ -116,16 +132,26 @@ public class SSECEncryptionTest extends IntegrationTestBase {
     assertChecksums(directChecksum, aalChecksum);
   }
 
-  static Stream<Arguments> encryptedReads() {
+  static Stream<Arguments> encryptedSequentialReads() {
     List<S3Object> readEncryptedObjects = new ArrayList<>();
     readEncryptedObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_SEQUENTIAL_1MB);
+
+    return argumentsFor(
+        getS3ClientKinds(),
+        readEncryptedObjects,
+        sequentialPatterns(),
+        readCorrectnessConfigurationKind());
+  }
+
+  static Stream<Arguments> encryptedParquetReads() {
+    List<S3Object> readEncryptedObjects = new ArrayList<>();
     readEncryptedObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_PARQUET_1MB);
     readEncryptedObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_PARQUET_64MB);
 
     return argumentsFor(
         getS3ClientKinds(),
         readEncryptedObjects,
-        allPatterns(),
+        parquetPatterns(),
         readCorrectnessConfigurationKind());
   }
 

@@ -61,7 +61,7 @@ public class ReadCorrectnessTest extends IntegrationTestBase {
   static Stream<Arguments> sequentialReads() {
     return argumentsFor(
         getS3ClientKinds(),
-        S3Object.smallAndMediumObjects(),
+        S3Object.smallAndMediumObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
         sequentialPatterns(),
         readCorrectnessConfigurationKind());
   }
@@ -69,7 +69,7 @@ public class ReadCorrectnessTest extends IntegrationTestBase {
   static Stream<Arguments> skippingReads() {
     return argumentsFor(
         getS3ClientKinds(),
-        S3Object.smallAndMediumObjects(),
+        S3Object.smallAndMediumObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
         skippingPatterns(),
         readCorrectnessConfigurationKind());
   }
@@ -77,7 +77,7 @@ public class ReadCorrectnessTest extends IntegrationTestBase {
   static Stream<Arguments> parquetReads() {
     return argumentsFor(
         getS3ClientKinds(),
-        S3Object.smallAndMediumObjects(),
+        S3Object.smallAndMediumObjects(S3ObjectKind.RANDOM_SEQUENTIAL),
         parquetPatterns(),
         readCorrectnessConfigurationKind());
   }
