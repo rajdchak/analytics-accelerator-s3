@@ -53,10 +53,18 @@ public enum S3Object {
       "sequential-20mb.csv", 20 * SizeConstants.ONE_MB_IN_BYTES, S3ObjectKind.RANDOM_SEQUENTIAL),
   TXT_16MB(
       "sequential-16mb.txt", 16 * SizeConstants.ONE_MB_IN_BYTES, S3ObjectKind.RANDOM_SEQUENTIAL),
-  RANDOM_SSEC_ENCRYPTED_1MB(
+  RANDOM_SSEC_ENCRYPTED_SEQUENTIAL_1MB(
       "random-encrypted-1mb.bin",
       SizeConstants.ONE_MB_IN_BYTES,
-      S3ObjectKind.RANDOM_SEQUENTIAL_ENCRYPTED);
+      S3ObjectKind.RANDOM_SEQUENTIAL_ENCRYPTED),
+  RANDOM_SSEC_ENCRYPTED_PARQUET_1MB(
+      "random-encrypted-1mb.parquet",
+      SizeConstants.ONE_MB_IN_BYTES,
+      S3ObjectKind.RANDOM_PARQUET_ENCRYPTED),
+  RANDOM_SSEC_ENCRYPTED_PARQUET_64MB(
+      "random-encrypted-64mb.parquet",
+      64 * SizeConstants.ONE_MB_IN_BYTES,
+      S3ObjectKind.RANDOM_PARQUET_ENCRYPTED);
 
   private final String name;
   private final long size;
@@ -101,7 +109,8 @@ public enum S3Object {
    * @return small objects
    */
   public static List<S3Object> smallObjects(@NonNull S3ObjectKind... kinds) {
-    return filter(o -> o.size < MEDIUM_SIZE_THRESHOLD);
+    return filter(
+        o -> o.size < MEDIUM_SIZE_THRESHOLD && Arrays.asList(kinds).contains(o.getKind()));
   }
   /**
    * Returns list of small binary objects (between 8 MB and 50MB, .bin files only).
@@ -114,7 +123,8 @@ public enum S3Object {
         o ->
             o.size >= SMALL_BINARY_OBJECTS_LOWER_LIMIT
                 && o.size < MEDIUM_SIZE_THRESHOLD
-                && o.getName().endsWith(".bin"));
+                && o.getName().endsWith(".bin")
+                && Arrays.asList(kinds).contains(o.getKind()));
   }
 
   /**

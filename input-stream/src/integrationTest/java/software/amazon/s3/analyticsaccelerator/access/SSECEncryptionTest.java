@@ -15,14 +15,24 @@
  */
 package software.amazon.s3.analyticsaccelerator.access;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static software.amazon.s3.analyticsaccelerator.access.ChecksumAssertions.assertChecksums;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import software.amazon.awssdk.core.checksums.Crc32CChecksum;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.s3.analyticsaccelerator.request.EncryptionSecrets;
+import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 
 public class SSECEncryptionTest extends IntegrationTestBase {
 
@@ -34,15 +44,100 @@ public class SSECEncryptionTest extends IntegrationTestBase {
       StreamReadPatternKind streamReadPattern,
       AALInputStreamConfigurationKind configuration)
       throws IOException {
-    testReadPatternUsingSSECEncryption(s3ClientKind, s3Object, streamReadPattern, configuration);
+    testReadPatternUsingSSECEncryption(
+        s3ClientKind,
+        s3Object,
+        streamReadPattern,
+        configuration,
+        "AO8XKQXJgtIS9G+IrSWZ2eSNW1yJlvqElVoVcNlvDqE=");
+  }
+
+  @ParameterizedTest
+  @MethodSource("encryptedReadsWithWrongKey")
+  void testEncryptedReadsWithWrongKey(
+      S3ClientKind s3ClientKind,
+      S3Object s3Object,
+      StreamReadPatternKind streamReadPattern,
+      AALInputStreamConfigurationKind configuration) {
+
+    CompletionException exception =
+        assertThrows(
+            CompletionException.class,
+            () -> {
+              testReadPatternUsingSSECEncryption(
+                  s3ClientKind,
+                  s3Object,
+                  streamReadPattern,
+                  configuration,
+                  "AO8XKQXJgtIS9G+IrSWZ2eSNW1yJlvqElVoVcNlvDqE");
+            });
+
+    Throwable cause = exception.getCause();
+    assertTrue(cause instanceof S3Exception);
+    S3Exception s3Exception = (S3Exception) cause;
+    assertEquals(400, s3Exception.statusCode());
+    assertTrue(s3Exception.getMessage().contains("calculated MD5 hash of the key did not match"));
+  }
+
+  protected void testReadPatternUsingSSECEncryption(
+      @NonNull S3ClientKind s3ClientKind,
+      @NonNull S3Object s3Object,
+      @NonNull StreamReadPatternKind streamReadPatternKind,
+      @NonNull AALInputStreamConfigurationKind AALInputStreamConfigurationKind,
+      String customerKey)
+      throws IOException {
+    StreamReadPattern streamReadPattern = streamReadPatternKind.getStreamReadPattern(s3Object);
+    OpenStreamInformation openStreamInformation =
+        OpenStreamInformation.builder()
+            .encryptionSecrets(
+                EncryptionSecrets.builder().sseCustomerKey(Optional.of(customerKey)).build())
+            .build();
+
+    // Read using the standard S3 async client
+    Crc32CChecksum directChecksum = new Crc32CChecksum();
+    executeReadPatternDirectly(
+        s3ClientKind,
+        s3Object,
+        streamReadPattern,
+        Optional.of(directChecksum),
+        openStreamInformation);
+
+    // Read using the AAL S3
+    Crc32CChecksum aalChecksum = new Crc32CChecksum();
+    executeReadPatternOnAAL(
+        s3ClientKind,
+        s3Object,
+        streamReadPattern,
+        AALInputStreamConfigurationKind,
+        Optional.of(aalChecksum),
+        openStreamInformation);
+
+    // Assert checksums
+    assertChecksums(directChecksum, aalChecksum);
   }
 
   static Stream<Arguments> encryptedReads() {
-    List<S3Object> readVectoredObjects = new ArrayList<>();
-    readVectoredObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_1MB);
+    List<S3Object> readEncryptedObjects = new ArrayList<>();
+    readEncryptedObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_SEQUENTIAL_1MB);
+    readEncryptedObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_PARQUET_1MB);
+    readEncryptedObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_PARQUET_64MB);
 
     return argumentsFor(
-        getS3ClientKinds(), readVectoredObjects, allPatterns(), readCorrectnessConfigurationKind());
+        getS3ClientKinds(),
+        readEncryptedObjects,
+        allPatterns(),
+        readCorrectnessConfigurationKind());
+  }
+
+  static Stream<Arguments> encryptedReadsWithWrongKey() {
+    List<S3Object> readEncryptedObjects = new ArrayList<>();
+    readEncryptedObjects.add(S3Object.RANDOM_SSEC_ENCRYPTED_PARQUET_64MB);
+
+    return argumentsFor(
+        getS3ClientKinds(),
+        readEncryptedObjects,
+        sequentialPatterns(),
+        readCorrectnessConfigurationKind());
   }
 
   private static List<AALInputStreamConfigurationKind> readCorrectnessConfigurationKind() {

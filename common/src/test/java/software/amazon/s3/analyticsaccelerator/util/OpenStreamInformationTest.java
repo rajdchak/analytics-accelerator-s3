@@ -66,6 +66,7 @@ public class OpenStreamInformationTest {
         info.getEncryptionSecrets().getSsecCustomerKey().get(),
         "Customer key should match");
     assertNotNull(info.getEncryptionSecrets().getSsecCustomerKeyMd5(), "MD5 should not be null");
+    assertEquals("R+k8pqEVUmkxDfaH5MqIdw==", info.getEncryptionSecrets().getSsecCustomerKeyMd5());
   }
 
   @Test
@@ -146,6 +147,7 @@ public class OpenStreamInformationTest {
         info.getEncryptionSecrets().getSsecCustomerKey().get(),
         "Customer key should match");
     assertNotNull(info.getEncryptionSecrets().getSsecCustomerKeyMd5(), "MD5 should not be null");
+    assertEquals("R+k8pqEVUmkxDfaH5MqIdw==", info.getEncryptionSecrets().getSsecCustomerKeyMd5());
   }
 
   @Test

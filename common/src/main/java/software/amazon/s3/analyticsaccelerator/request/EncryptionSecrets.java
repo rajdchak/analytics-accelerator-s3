@@ -46,6 +46,16 @@ public class EncryptionSecrets {
   /**
    * Constructs an EncryptionSecrets instance with the specified SSE-C customer key.
    *
+   * <p>This constructor processes the SSE-C (Server-Side Encryption with Customer-Provided Keys)
+   * encryption key and calculates its MD5 hash as required by Amazon S3. The process involves:
+   *
+   * <ol>
+   *   <li>Accepting a Base64-encoded encryption key
+   *   <li>Decoding the Base64 key back to bytes
+   *   <li>Computing the MD5 hash of these bytes
+   *   <li>Encoding the MD5 hash in Base64 format
+   * </ol>
+   *
    * @param sseCustomerKey An Optional containing the Base64-encoded encryption key, or empty if no
    *     encryption is needed
    */

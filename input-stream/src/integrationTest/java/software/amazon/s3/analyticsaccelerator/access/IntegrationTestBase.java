@@ -46,7 +46,6 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.s3.analyticsaccelerator.S3SeekableInputStream;
 import software.amazon.s3.analyticsaccelerator.common.ObjectRange;
-import software.amazon.s3.analyticsaccelerator.request.EncryptionSecrets;
 import software.amazon.s3.analyticsaccelerator.util.OpenStreamInformation;
 import software.amazon.s3.analyticsaccelerator.util.S3URI;
 
@@ -116,43 +115,6 @@ public abstract class IntegrationTestBase extends ExecutionBase {
         AALInputStreamConfigurationKind,
         Optional.of(aalChecksum),
         OpenStreamInformation.DEFAULT);
-
-    // Assert checksums
-    assertChecksums(directChecksum, aalChecksum);
-  }
-
-  protected void testReadPatternUsingSSECEncryption(
-      @NonNull S3ClientKind s3ClientKind,
-      @NonNull S3Object s3Object,
-      @NonNull StreamReadPatternKind streamReadPatternKind,
-      @NonNull AALInputStreamConfigurationKind AALInputStreamConfigurationKind)
-      throws IOException {
-    StreamReadPattern streamReadPattern = streamReadPatternKind.getStreamReadPattern(s3Object);
-    String customerKey = "AO8XKQXJgtIS9G+IrSWZ2eSNW1yJlvqElVoVcNlvDqE=";
-    OpenStreamInformation openStreamInformation =
-        OpenStreamInformation.builder()
-            .encryptionSecrets(
-                EncryptionSecrets.builder().sseCustomerKey(Optional.of(customerKey)).build())
-            .build();
-
-    // Read using the standard S3 async client
-    Crc32CChecksum directChecksum = new Crc32CChecksum();
-    executeReadPatternDirectly(
-        s3ClientKind,
-        s3Object,
-        streamReadPattern,
-        Optional.of(directChecksum),
-        openStreamInformation);
-
-    // Read using the AAL S3
-    Crc32CChecksum aalChecksum = new Crc32CChecksum();
-    executeReadPatternOnAAL(
-        s3ClientKind,
-        s3Object,
-        streamReadPattern,
-        AALInputStreamConfigurationKind,
-        Optional.of(aalChecksum),
-        openStreamInformation);
 
     // Assert checksums
     assertChecksums(directChecksum, aalChecksum);
