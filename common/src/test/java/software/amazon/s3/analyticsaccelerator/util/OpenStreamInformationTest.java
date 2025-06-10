@@ -28,6 +28,14 @@ import software.amazon.s3.analyticsaccelerator.request.StreamAuditContext;
 
 public class OpenStreamInformationTest {
 
+  private static final String CUSTOMER_KEY = "32-bytes-long-key-for-testing-123";
+
+  /**
+   * To generate the base64 encoded md5 value for a customer key use the cli command echo -n
+   * "customer_key" | base64 | base64 -d | openssl md5 -binary | base64
+   */
+  private static final String EXPECTED_BASE64_MD5 = "R+k8pqEVUmkxDfaH5MqIdw==";
+
   @Test
   public void testDefaultInstance() {
     OpenStreamInformation info = OpenStreamInformation.DEFAULT;
@@ -45,8 +53,7 @@ public class OpenStreamInformationTest {
     ObjectMetadata mockMetadata = Mockito.mock(ObjectMetadata.class);
     InputPolicy mockPolicy = Mockito.mock(InputPolicy.class);
     String base64Key =
-        Base64.getEncoder()
-            .encodeToString("32-bytes-long-key-for-testing-123".getBytes(StandardCharsets.UTF_8));
+        Base64.getEncoder().encodeToString(CUSTOMER_KEY.getBytes(StandardCharsets.UTF_8));
     EncryptionSecrets secrets =
         EncryptionSecrets.builder().sseCustomerKey(Optional.of(base64Key)).build();
 
@@ -66,7 +73,7 @@ public class OpenStreamInformationTest {
         info.getEncryptionSecrets().getSsecCustomerKey().get(),
         "Customer key should match");
     assertNotNull(info.getEncryptionSecrets().getSsecCustomerKeyMd5(), "MD5 should not be null");
-    assertEquals("R+k8pqEVUmkxDfaH5MqIdw==", info.getEncryptionSecrets().getSsecCustomerKeyMd5());
+    assertEquals(EXPECTED_BASE64_MD5, info.getEncryptionSecrets().getSsecCustomerKeyMd5());
   }
 
   @Test
@@ -131,8 +138,7 @@ public class OpenStreamInformationTest {
   public void testBuilderWithEncryptionSecrets() {
     // Create a sample base64 encoded key
     String base64Key =
-        Base64.getEncoder()
-            .encodeToString("32-bytes-long-key-for-testing-123".getBytes(StandardCharsets.UTF_8));
+        Base64.getEncoder().encodeToString(CUSTOMER_KEY.getBytes(StandardCharsets.UTF_8));
     EncryptionSecrets secrets =
         EncryptionSecrets.builder().sseCustomerKey(Optional.of(base64Key)).build();
 
@@ -147,7 +153,7 @@ public class OpenStreamInformationTest {
         info.getEncryptionSecrets().getSsecCustomerKey().get(),
         "Customer key should match");
     assertNotNull(info.getEncryptionSecrets().getSsecCustomerKeyMd5(), "MD5 should not be null");
-    assertEquals("R+k8pqEVUmkxDfaH5MqIdw==", info.getEncryptionSecrets().getSsecCustomerKeyMd5());
+    assertEquals(EXPECTED_BASE64_MD5, info.getEncryptionSecrets().getSsecCustomerKeyMd5());
   }
 
   @Test
