@@ -73,7 +73,7 @@ s3SeekableInputStreamFactory.close();
 
 ### Accessing SSE_C encrypted objects
 
-To access SSE_C encrypted objects using AAL pass the customer key in the ```OpenStreamInformation``` object and pass the openStreamInformation object in the stream. The customer key must be base64 encoded and the same key must be used for both encryption and decryption.
+To access SSE_C encrypted objects using AAL, set the customer key which was used to encrypt the object in the ```OpenStreamInformation``` object and pass the openStreamInformation object in the stream. The customer key must be base64 encoded.
 
 ```
  OpenStreamInformation openStreamInformation =
